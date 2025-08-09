@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{matrix.os.distro}}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -49,54 +49,10 @@ jobs:
       - name: Rename library artifact
         run: mv ${{runner.workspace}}/build/src/libgluasteal.so ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-gcc${{matrix.os.gcc_version}}-${{matrix.toolchain}}-${{matrix.build_type}}.so
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: "Linux"
           path: ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-gcc${{matrix.os.gcc_version}}-${{matrix.toolchain}}-${{matrix.build_type}}.so
-          if-no-files-found: error
-          retention-days: 14
-  windows:
-    strategy:
-      matrix:
-        os:
-          - { name: Windows Server 2019, distro: windows-2019 }
-          - { name: Windows Server 2022, distro: windows-2022 }
-        build_type: [Debug, Release]
-        arch: [Win32, x64]
-
-    name: "${{matrix.os.name}} ${{matrix.build_type}} ${{matrix.arch}}"
-    runs-on: ${{matrix.os.distro}}
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Create build environment
-        working-directory: ${{runner.workspace}}
-        run: mkdir build
-
-      - name: Initialize CMake
-        working-directory: ${{runner.workspace}}/build
-        run: cmake -A ${{matrix.arch}} -DCMAKE_TOOLCHAIN_FILE=../toolchains/msvc.cmake $env:GITHUB_WORKSPACE
-
-      - name: Build
-        working-directory: ${{runner.workspace}}/build
-        run: msbuild gluasteal.sln /p:Configuration=${{matrix.build_type}} /p:Platform=${{matrix.arch == 'x86' && 'Win32' || matrix.arch}}
-
-      - name: Test
-        working-directory: ${{runner.workspace}}/build
-        run: ctest -V -C ${{matrix.build_type}} --timeout 60
-
-      - name: Rename library artifact
-        run: move ${{runner.workspace}}/build/src/${{matrix.build_type}}/gluasteal.dll ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-${{matrix.arch}}-${{matrix.build_type}}.dll
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: "Windows"
-          path: ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-${{matrix.arch}}-${{matrix.build_type}}.dll
           if-no-files-found: error
           retention-days: 14
   macos:
@@ -112,7 +68,7 @@ jobs:
     runs-on: ${{matrix.os.distro}}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -140,7 +96,7 @@ jobs:
       - name: Rename library artifact
         run: mv ${{runner.workspace}}/build/src/libgluasteal.dylib ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-${{matrix.toolchain}}-${{matrix.build_type}}.dylib
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: "macOS"
           path: ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-${{matrix.toolchain}}-${{matrix.build_type}}.dylib
