@@ -51,55 +51,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: "Linux"
+          name: gluasteal-${{matrix.os.distro}}-gcc${{matrix.os.gcc_version}}-${{matrix.toolchain}}-${{matrix.build_type}}
           path: ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-gcc${{matrix.os.gcc_version}}-${{matrix.toolchain}}-${{matrix.build_type}}.so
           if-no-files-found: error
           retention-days: 14
-  macos:
-    strategy:
-      matrix:
-        os:
-          - { name: "macOS Big Sur 11", distro: macos-11 }
-          - { name: "macOS Monterey 12", distro: macos-12 }
-        build_type: [Debug, Release]
-        toolchain: ["gcc-macos-x86_64"]
-
-    name: "${{matrix.os.name}} ${{matrix.build_type}} ${{matrix.toolchain}}"
-    runs-on: ${{matrix.os.distro}}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Create build environment
-        working-directory: ${{runner.workspace}}
-        run: mkdir build
-
-      - name: Initialize CMake
-        env:
-          CC: /usr/bin/gcc
-          CXX: /usr/bin/g++
-        working-directory: ${{runner.workspace}}/build
-        run: cmake --debug-output $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_TOOLCHAIN_FILE=toolchains/${{matrix.toolchain}}.cmake
-
-      - name: Build
-        shell: bash
-        working-directory: ${{runner.workspace}}/build
-        run: make
-
-      - name: Test
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        run: ctest -V -C ${{matrix.build_type}}
-
-      - name: Rename library artifact
-        run: mv ${{runner.workspace}}/build/src/libgluasteal.dylib ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-${{matrix.toolchain}}-${{matrix.build_type}}.dylib
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: "macOS"
-          path: ${{runner.workspace}}/build/gluasteal-${{matrix.os.distro}}-${{matrix.toolchain}}-${{matrix.build_type}}.dylib
-          if-no-files-found: error
-          retention-days: 14
-
